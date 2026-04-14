@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="margin-top: 80px; max-width: 360px; margin-left: auto; margin-right: auto;">
+    <h1 style="text-align: center; margin-bottom: 32px; font-size: 36px;">Регистрация</h1>
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form action="/register" method="post">
+        <input type="text" name="username" placeholder="Имя пользователя" required>
+        <input type="password" name="password" placeholder="Пароль" required>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Зарегистрироваться</button>
+    </form>
+
+    <p style="text-align: center; margin-top: 16px;">
+        Уже есть аккаунт? <a href="/login">Войти</a>
+    </p>
+</div>
+{% endblock %}

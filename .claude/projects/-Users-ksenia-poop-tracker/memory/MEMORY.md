@@ -1,0 +1,1 @@
+- [feedback_uv.md](feedback_uv.md) - User prefers uv commands for dependency management, not pip

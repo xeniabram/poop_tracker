@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block extra_style %}
+<style>
+    .day-row { margin-bottom: 20px; }
+    .day-label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        font-size: 14px;
+    }
+    .day-label .weekday { color: #8d6e63; }
+    .day-label .count { color: #795548; font-weight: 400; }
+    .timeline {
+        position: relative;
+        height: 40px;
+        background: #efebe9;
+        border-radius: 10px;
+        overflow: visible;
+    }
+    .hour-marks {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        display: flex;
+    }
+    .hour-mark {
+        flex: 1;
+        border-left: 1px solid #d7ccc8;
+        position: relative;
+    }
+    .hour-mark:last-child { border-right: 1px solid #d7ccc8; }
+    .hour-label {
+        position: absolute;
+        bottom: -16px;
+        left: -4px;
+        font-size: 9px;
+        color: #a1887f;
+    }
+    .poop-dot {
+        position: absolute;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        background: #4e342e;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+        cursor: default;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .poop-dot .tooltip {
+        display: none;
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #3e2723;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+    .poop-dot:hover .tooltip { display: block; }
+    .no-poops {
+        color: #bcaaa4;
+        font-size: 13px;
+        line-height: 40px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<header>
+    <h1>Календарь</h1>
+    <a href="/" class="btn btn-small btn-secondary">Назад</a>
+</header>
+
+{% for day in days %}
+<div class="day-row">
+    <div class="day-label">
+        <span class="weekday">{{ day.weekday }}</span> {{ day.date_str }}
+        {% if day.poops %}<span class="count">({{ day.poops|length }})</span>{% endif %}
+    </div>
+    <div class="timeline">
+        <div class="hour-marks">
+            {% for h in range(24) %}
+            <div class="hour-mark">
+                {% if h % 3 == 0 %}
+                <span class="hour-label">{{ h }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% for poop in day.poops %}
+        <div class="poop-dot" style="left: {{ poop.position }}%;">
+            <span class="tooltip">{{ poop.time }}</span>
+        </div>
+        {% endfor %}
+        {% if not day.poops %}
+        <div class="no-poops">&mdash;</div>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+<div style="height: 24px;"></div>
+{% endblock %}
