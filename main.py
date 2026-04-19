@@ -18,7 +18,7 @@ DB_PATH = os.environ.get("DB_PATH", "poop.db")
 BRISTOL_TYPES = list(range(1, 9))  # 1-8
 
 EFFORT_ICONS = {
-    1: "",   # easy
+    1: "😌",   # easy
     2: "😐",   # normal
     3: "😣",   # hard
 }
