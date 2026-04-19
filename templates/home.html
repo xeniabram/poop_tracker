@@ -26,6 +26,7 @@
     }
     .poop-btn:hover { background: #5d4037; }
     .poop-btn:active { transform: scale(0.95); }
+    .poop-btn:disabled { background: #bcaaa4; cursor: not-allowed; transform: none; }
     .calendar-btn {
         display: block;
         background: #d7ccc8;
@@ -56,6 +57,69 @@
         40% { transform: translate(-50%, -50%) scale(1.3); }
         100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5) translateY(-40px); }
     }
+
+    .section-label {
+        font-size: 16px;
+        font-weight: 600;
+        color: #5d4037;
+        margin-bottom: 8px;
+    }
+
+    .bristol-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    .bristol-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 4px;
+        border: 3px solid #d7ccc8;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: border-color 0.15s, transform 0.1s;
+        background: white;
+    }
+    .bristol-option:active { transform: scale(0.95); }
+    .bristol-option.selected { border-color: #795548; background: #efebe9; }
+    .bristol-option img {
+        width: 56px;
+        height: 40px;
+        object-fit: contain;
+    }
+    .bristol-option .type-num {
+        font-size: 11px;
+        color: #8d6e63;
+        margin-top: 2px;
+    }
+
+    .effort-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .effort-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 8px;
+        border: 3px solid #d7ccc8;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: border-color 0.15s, transform 0.1s;
+        background: white;
+        font-size: 28px;
+    }
+    .effort-option:active { transform: scale(0.95); }
+    .effort-option.selected { border-color: #795548; background: #efebe9; }
+    .effort-option .effort-label {
+        font-size: 12px;
+        color: #8d6e63;
+        margin-top: 4px;
+    }
 </style>
 {% endblock %}
 
@@ -71,8 +135,37 @@
 <img src="/static/poop.svg" alt="poop" class="poop-hero">
 
 <div class="actions">
-    <form action="/poop" method="post">
-        <button type="submit" class="poop-btn">Я покакал</button>
+    <form action="/poop" method="post" id="poop-form">
+        <input type="hidden" name="bristol_type" id="bristol_type" value="">
+        <input type="hidden" name="effort" id="effort" value="">
+
+        <div class="section-label">Тип по Бристольской шкале</div>
+        <div class="bristol-grid">
+            {% for i in range(1, 9) %}
+            <div class="bristol-option" data-type="{{ i }}" onclick="selectBristol(this, {{ i }})">
+                <img src="/static/bristol/bristol{{ i }}.png" alt="Тип {{ i }}">
+                <span class="type-num">{{ i }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="section-label">Усилие</div>
+        <div class="effort-row">
+            <div class="effort-option" data-effort="1" onclick="selectEffort(this, 1)">
+                😌
+                <span class="effort-label">легко</span>
+            </div>
+            <div class="effort-option" data-effort="2" onclick="selectEffort(this, 2)">
+                😐
+                <span class="effort-label">норм</span>
+            </div>
+            <div class="effort-option" data-effort="3" onclick="selectEffort(this, 3)">
+                😣
+                <span class="effort-label">тяжко</span>
+            </div>
+        </div>
+
+        <button type="submit" class="poop-btn" id="submit-btn" disabled>Я покакал</button>
     </form>
     <a href="/calendar" class="calendar-btn">Календарь</a>
 </div>
@@ -80,4 +173,29 @@
 {% if just_pooped %}
 <div class="success-flash">&#x1f4a9;</div>
 {% endif %}
+
+<script>
+    let selectedBristol = null;
+    let selectedEffort = null;
+
+    function selectBristol(el, type) {
+        document.querySelectorAll('.bristol-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedBristol = type;
+        document.getElementById('bristol_type').value = type;
+        updateSubmit();
+    }
+
+    function selectEffort(el, level) {
+        document.querySelectorAll('.effort-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedEffort = level;
+        document.getElementById('effort').value = level;
+        updateSubmit();
+    }
+
+    function updateSubmit() {
+        document.getElementById('submit-btn').disabled = !(selectedBristol && selectedEffort);
+    }
+</script>
 {% endblock %}

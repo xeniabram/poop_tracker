@@ -11,7 +11,7 @@
     .day-label .count { color: #795548; font-weight: 400; }
     .timeline {
         position: relative;
-        height: 40px;
+        height: 56px;
         background: #efebe9;
         border-radius: 10px;
         overflow: visible;
@@ -34,22 +34,32 @@
         font-size: 9px;
         color: #a1887f;
     }
-    .poop-dot {
+    .poop-marker {
         position: absolute;
         top: 50%;
-        width: 18px;
-        height: 18px;
-        background: #4e342e;
-        border-radius: 50%;
         transform: translate(-50%, -50%);
         z-index: 2;
         cursor: default;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
     }
-    .poop-dot .tooltip {
+    .poop-marker img {
+        width: 28px;
+        height: 20px;
+        object-fit: contain;
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+    }
+    .poop-marker .effort-emoji {
+        font-size: 10px;
+        line-height: 1;
+        margin-top: 1px;
+    }
+    .poop-marker .tooltip {
         display: none;
         position: absolute;
-        top: -30px;
+        top: -28px;
         left: 50%;
         transform: translateX(-50%);
         background: #3e2723;
@@ -59,11 +69,11 @@
         font-size: 12px;
         white-space: nowrap;
     }
-    .poop-dot:hover .tooltip { display: block; }
+    .poop-marker:hover .tooltip { display: block; }
     .no-poops {
         color: #bcaaa4;
         font-size: 13px;
-        line-height: 40px;
+        line-height: 56px;
         text-align: center;
     }
 </style>
@@ -92,8 +102,10 @@
             {% endfor %}
         </div>
         {% for poop in day.poops %}
-        <div class="poop-dot" style="left: {{ poop.position }}%;">
-            <span class="tooltip">{{ poop.time }}</span>
+        <div class="poop-marker" style="left: {{ poop.position }}%;">
+            <img src="/static/bristol/bristol{{ poop.bristol_type }}.png" alt="Тип {{ poop.bristol_type }}">
+            <span class="effort-emoji">{{ poop.effort_icon }}</span>
+            <span class="tooltip">{{ poop.time }} — тип {{ poop.bristol_type }}</span>
         </div>
         {% endfor %}
         {% if not day.poops %}

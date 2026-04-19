@@ -15,6 +15,14 @@ templates = Jinja2Templates(directory="templates")
 
 DB_PATH = os.environ.get("DB_PATH", "poop.db")
 
+BRISTOL_TYPES = list(range(1, 9))  # 1-8
+
+EFFORT_ICONS = {
+    1: "",   # easy
+    2: "😐",   # normal
+    3: "😣",   # hard
+}
+
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -42,6 +50,15 @@ def init_db():
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
     """)
+    # Migrate: add bristol_type and effort columns
+    try:
+        conn.execute("ALTER TABLE poops ADD COLUMN bristol_type INTEGER DEFAULT 4")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        conn.execute("ALTER TABLE poops ADD COLUMN effort INTEGER DEFAULT 2")
+    except sqlite3.OperationalError:
+        pass
     conn.commit()
     conn.close()
 
@@ -183,15 +200,23 @@ def home(request: Request):
 
 
 @app.post("/poop")
-def record_poop(request: Request):
+def record_poop(
+    request: Request,
+    bristol_type: int = Form(...),
+    effort: int = Form(...),
+):
     user = get_current_user(request)
     if not user:
         return RedirectResponse("/login", status_code=302)
 
+    bristol_type = max(1, min(8, bristol_type))
+    effort = max(1, min(3, effort))
+
     now = datetime.now().isoformat()
     conn = get_db()
     conn.execute(
-        "INSERT INTO poops (user_id, timestamp) VALUES (?, ?)", (user["id"], now)
+        "INSERT INTO poops (user_id, timestamp, bristol_type, effort) VALUES (?, ?, ?, ?)",
+        (user["id"], now, bristol_type, effort),
     )
     conn.commit()
     conn.close()
@@ -209,7 +234,7 @@ def calendar_view(request: Request):
     )
     conn = get_db()
     rows = conn.execute(
-        "SELECT timestamp FROM poops WHERE user_id = ? AND timestamp >= ? "
+        "SELECT timestamp, bristol_type, effort FROM poops WHERE user_id = ? AND timestamp >= ? "
         "ORDER BY timestamp DESC",
         (user["id"], since.isoformat()),
     ).fetchall()
@@ -226,7 +251,14 @@ def calendar_view(request: Request):
         day_key = ts.date().isoformat()
         if day_key in days_map:
             position = (ts.hour * 60 + ts.minute) / (24 * 60) * 100
-            days_map[day_key].append({"time": ts.strftime("%H:%M"), "position": position})
+            bt = row["bristol_type"] or 4
+            ef = row["effort"] or 2
+            days_map[day_key].append({
+                "time": ts.strftime("%H:%M"),
+                "position": position,
+                "bristol_type": bt,
+                "effort_icon": EFFORT_ICONS.get(ef, "😐"),
+            })
 
     weekdays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
     calendar_days = []
